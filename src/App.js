@@ -12,6 +12,8 @@ import UserProfile from './pages/UserProfile';
 import AICoachPage from './pages/AICoachPage';
 import BmiCalculator from './pages/BmiCalculator';
 import { AuthProvider } from './contexts/AuthContext';
+import Signup from './components/Signup';
+import Login from './components/Login';
 
 const App = () => (
   <Router>
@@ -23,8 +25,11 @@ const App = () => (
           <Route path="/exercise/:id" element={<ExerciseDetail />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/ai-coach" element={<AICoachPage />} />
-          <Route path="/user-profile" element={<UserProfile />} />
+          <Route path="/userprofile" element={<UserProfile />} />
           <Route path="/BmiCalculator" element={<BmiCalculator />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/userprofile" element={<UserProfile />} />
         </Routes>
         <Footer />
       </Box>

@@ -1,93 +1,128 @@
-import React, { useState, useEffect } from 'react';
-import { Box, CircularProgress, Container, Paper, Grid, Button, Typography } from '@mui/material';
+import React, { useState } from 'react';
+import { Typography } from '@mui/material';
+import Rock from '../assets/images/Rock.png';
+import Rock2 from '../assets/images/Rock2.png';
+import Rock3 from '../assets/images/Rock3.png';
 import { useAuth } from '../contexts/AuthContext';
-import { getUserProfile, updateUserProfile } from '../utils/userService';
-import LogoutButton from '../components/LogoutButton';
-import PhotoSection from '../components/PhotoSection';
-import ProfileDetails from '../components/ProfileDetails';
 import Login from '../components/Login';
 
 function UserProfile() {
   const { currentUser, logout } = useAuth();
-  const [user, setUser] = useState(null);
+  const initialUser = {
+    name: 'Dwayne Johnson',
+    gender: 'Male',
+    age: 52,
+    weight: 260,
+    height: 72,
+    goals: 'To maintain a muscular physique fit for Hollywood movies.',
+    email: 'The.Rock@hollywood.com',
+  };
+
+  const [user, setUser] = useState(initialUser);
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [pic, setPic] = useState(Rock);
+  const [beforePic, setBeforePic] = useState(Rock2);
+  const [afterPic, setAfterPic] = useState(Rock3);
 
-  useEffect(() => {
-    if (currentUser) {
-      fetchProfile();
-    } else {
-      setIsLoading(false);
-    }
-  }, [currentUser]);
-
-  const fetchProfile = async () => {
-    setIsLoading(true);
-    try {
-      const profileData = await getUserProfile(currentUser.uid);
-      setUser(profileData || {
-        name: 'Dwayne Johnson',
-        email: 'The.Rock@hollywood.com',
-        gender: 'Male',
-        age: 50,
-        weight: 200,
-        height: 72,
-        goals: 'To maintain a muscular physique fit for Hollywood movies.',
-      });
-      setIsLoading(false);
-    } catch (err) {
-      setError('Failed to load profile');
-      setIsLoading(false);
+  const postDetails = (pics, type) => {
+    if (pics.type === 'image/jpeg' || pics.type === 'image/png') {
+      const reader = new FileReader();
+      reader.onload = () => {
+        switch (type) {
+          case 'profile':
+            setPic(reader.result);
+            break;
+          case 'before':
+            setBeforePic(reader.result);
+            break;
+          case 'after':
+            setAfterPic(reader.result);
+            break;
+          default:
+            break;
+        }
+      };
+      reader.readAsDataURL(pics);
     }
   };
 
-  const handleEdit = () => setIsEditing(true);
-  const handleCancel = () => setIsEditing(false);
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setUser((prev) => ({ ...prev, [name]: value }));
+  const handleChange = (field, value) => {
+    setUser({ ...user, [field]: value });
   };
 
-  const handleSave = async () => {
-    setIsLoading(true);
-    console.log('Saving changes...');
-    try {
-      await updateUserProfile(currentUser.uid, user);
-      console.log('Changes saved successfully');
-      setIsEditing(false);
-      fetchProfile();
-    } catch (err) {
-      console.error('Failed to update profile:', err);
-      setError('Failed to update profile. Please try again.');
-    }
-    setIsLoading(false);
+  const handleEdit = () => {
+    setIsEditing(true);
   };
 
-  if (!currentUser) return <Login />;
-  if (isLoading) return <CircularProgress />;
-  if (error) return <Typography color="error">{error}</Typography>;
+  const handleSave = () => {
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+  };
+
+  if (!currentUser) {
+    return <Login />;
+  }
 
   return (
-    <Container>
-      <Box p={3} sx={{ maxWidth: 800, mx: 'auto' }}>
-        <Paper elevation={3} sx={{ p: 2 }}>
-          <Grid container spacing={2} alignItems="center">
-            <ProfileDetails user={user} isEditing={isEditing} handleChange={handleChange} />
-            <PhotoSection imagePath={user?.profilePic || 'default_avatar.jpg'} handleImageUpload={(e) => handleChange(e, 'profilePic')} label="Profile" isEditing={isEditing} />
-            <PhotoSection imagePath={user?.beforePic || 'default_before.jpg'} handleImageUpload={(e) => handleChange(e, 'beforePic')} label="Before" isEditing={isEditing} />
-            <PhotoSection imagePath={user?.afterPic || 'default_after.jpg'} handleImageUpload={(e) => handleChange(e, 'afterPic')} label="After" isEditing={isEditing} />
-            <Grid item xs={12}>
-              <Button variant="contained" color="secondary" onClick={isEditing ? handleSave : handleEdit} sx={{ ml: 2 }}>
-                {isEditing ? 'Save Changes' : 'Edit Profile'}
-              </Button>
-              {isEditing && <Button variant="outlined" onClick={handleCancel} sx={{ ml: 1 }}>Cancel</Button>}
-              <LogoutButton handleLogout={logout} />
-            </Grid>
-          </Grid>
-        </Paper>
-      </Box>
-    </Container>
+    <div className="user-profile">
+      <div className="user-profile" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <h1 style={{ fontFamily: 'Arial Black', fontWeight: 'bold', color: '#333', margin: '15px 0' }}>User Profile:</h1>
+      </div>
+
+      <div style={{ display: 'flex' }}>
+        <img src={pic} alt="Profile" style={{ width: '300px', height: '350px', marginRight: '30px' }} />
+        <Typography z-index="1" fontWeight={600} color="#FF2625" sx={{ opacity: '0.40', display: { lg: 'block', xs: 'none' }, fontSize: '100px' }}>
+          - {isEditing ? <textarea rows="5" cols="60" value={user.name} onChange={(e) => handleChange('name', e.target.value)} /> : user.name} - <br /> Iron Alliance Member
+        </Typography>
+      </div>
+      <p style={{ color: '#666', lineHeight: '1.5' }}>
+        <strong>Age:</strong> {isEditing ? <input value={user.age} onChange={(e) => handleChange('age', e.target.value)} /> : user.age} years old <br />
+        <strong>Weight:</strong> {isEditing ? <input value={user.weight} onChange={(e) => handleChange('weight', e.target.value)} /> : user.weight} lbs <br />
+        <strong>Height:</strong> {isEditing ? <input value={user.height} onChange={(e) => handleChange('height', e.target.value)} /> : user.height} in <br />
+        <strong>Email:</strong> {isEditing ? <textarea value={user.email} onChange={(e) => handleChange('email', e.target.value)} style={{ height: '50px' }} /> : user.email} <br />
+      </p>
+      <br />
+      <p style={{ color: '#999', fontSize: '30px', margin: '10px 0' }}>Fitness Goals: {isEditing ? <textarea rows="5" cols="60" value={user.goals} onChange={(e) => handleChange('goals', e.target.value)} /> : user.goals}</p>
+      {isEditing ? (
+        <div>
+          <label>Change Profile Picture:</label>
+          <input type="file" accept="image/png, image/jpeg" onChange={(e) => postDetails(e.target.files[0], 'profile')} />
+          <br />
+          <label>Change Before Photo:</label>
+          <input type="file" accept="image/png, image/jpeg" onChange={(e) => postDetails(e.target.files[0], 'before')} />
+          <br />
+          <label>Change Most Recent Photo:</label>
+          <input type="file" accept="image/png, image/jpeg" onChange={(e) => postDetails(e.target.files[0], 'after')} />
+          <br />
+          <button onClick={handleSave} style={{ textDecoration: 'none', width: '200px', textAlign: 'center', background: '#FF2625', padding: '14px', fontSize: '22px', textTransform: 'none', color: 'white', borderRadius: '4px', marginRight: '40px', marginTop: '20px', marginBottom: '20px' }}>Save</button>
+          <button onClick={handleCancel} style={{ textDecoration: 'none', width: '200px', textAlign: 'center', background: '#FF2625', padding: '14px', fontSize: '22px', textTransform: 'none', color: 'white', borderRadius: '4px' }}>Cancel</button>
+        </div>
+      ) : (
+        <div>
+          <button onClick={handleEdit} style={{ textDecoration: 'none', width: '200px', textAlign: 'center', background: '#FF2625', padding: '14px', fontSize: '22px', textTransform: 'none', color: 'white', borderRadius: '4px', marginRight: '40px', marginTop: '20px', marginBottom: '20px' }}>Edit Profile</button>
+        </div>
+      )}
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Typography variant="h6" style={{ marginBottom: '10px' }}>Before Photo</Typography>
+          <img src={beforePic} alt="Before Picture" style={{ width: '400px', height: '450px', marginBottom: '20px' }} />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: '30px' }}>
+          <Typography variant="h6" style={{ marginBottom: '10px' }}>Most Recent Photo</Typography>
+          <img src={afterPic} alt="Latest Picture" style={{ width: '400px', height: '450px', marginBottom: '20px' }} />
+        </div>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+        <button onClick={handleLogout} style={{ textDecoration: 'none', width: '200px', textAlign: 'center', background: '#FF2625', padding: '14px', fontSize: '22px', textTransform: 'none', color: 'white', borderRadius: '4px' }}>Logout</button>
+      </div>
+    </div>
   );
 }
 

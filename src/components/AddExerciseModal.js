@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, TextField, Button, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 
-const AddExerciseModal = ({ isOpen, onClose, onAddExercise, selectedDate }) => {
+const AddExerciseModal = ({ isOpen, onClose, onAddExercise}) => {
   const [title, setTitle] = useState('');
   const [duration, setDuration] = useState(1);
 

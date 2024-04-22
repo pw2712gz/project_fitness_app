@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { Box, Typography } from '@mui/material';
 import { ScrollMenu, VisibilityContext } from 'react-horizontal-scrolling-menu';
+import 'react-horizontal-scrolling-menu/dist/styles.css';
 import BodyPart from './BodyPart';
 import ExerciseCard from './ExerciseCard';
 

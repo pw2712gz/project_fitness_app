@@ -39,7 +39,7 @@ function Login() {
   };
 
   const handleSignUp = () => {
-    navigate('/signup'); // Assuming you have a route set up for signing up
+    navigate('/signup');
   };
 
   return (
@@ -70,9 +70,6 @@ function Login() {
         {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
       </form>
       <Divider sx={{ my: 2 }}>OR</Divider>
-      <Button onClick={handleGoogleSignIn} fullWidth variant="outlined" sx={{ mb: 2 }}>
-        Sign in with Google
-      </Button>
       <Button onClick={handleSignUp} fullWidth variant="contained" color="secondary">
         Sign Up
       </Button>
