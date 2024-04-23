@@ -16,8 +16,7 @@ function UserProfile() {
     age: 52,
     weight: 260,
     height: 72,
-    goals: 'To maintain a muscular physique fit for Hollywood movies.',
-    email: 'The.Rock@hollywood.com',
+    goals: 'To maintain a muscular physique fit for Hollywood movies.'
   };
 
   const [user, setUser] = useState(initialUser);
@@ -130,14 +129,6 @@ function UserProfile() {
             onChange={(e) => handleChange('height', e.target.value)}
           />
         ) : user.height} in <br />
-        <strong>Email:</strong> {isEditing
-          ? (
-            <textarea
-              value={user.email}
-              onChange={(e) => handleChange('email', e.target.value)}
-              style={{ height: '50px' }}
-            />
-          ) : user.email} <br />
       </p>
       <br />
       <p style={{ color: '#999', fontSize: '30px', margin: '10px 0' }}>Fitness Goals: {isEditing

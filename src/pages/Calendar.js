@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
 import { v4 as uuidv4 } from 'uuid';
+import { collection, doc, setDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import AddExerciseModal from '../components/AddExerciseModal';
 import EditExerciseModal from '../components/EditExerciseModal';
 import { useAuth } from '../contexts/AuthContext';
 import Login from '../components/Login';
+import { db } from '../firebase/config';
 
 const Calendar = () => {
   const { currentUser } = useAuth();
@@ -18,11 +20,22 @@ const Calendar = () => {
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [selectedDate, setSelectedDate] = useState('');
 
-  const generateUniqueId = () => uuidv4();
+  useEffect(() => {
+    if (currentUser) {
+      const unsubscribe = onSnapshot(collection(db, 'users', currentUser.uid, 'exercises'), (snapshot) => {
+        const loadedEvents = snapshot.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+        }));
+        setEvents(loadedEvents);
+      });
+      return () => unsubscribe();
+    }
+  }, [currentUser]);
 
-  const handleAddExercise = (title, duration) => {
+  const handleAddExercise = async (title, duration) => {
     const newExercise = {
-      id: generateUniqueId(),
+      id: uuidv4(),
       title,
       start: selectedDate,
       extendedProps: {
@@ -31,30 +44,32 @@ const Calendar = () => {
     };
     setEvents([...events, newExercise]);
     setAddExerciseModalOpen(false);
+    await setDoc(doc(db, 'users', currentUser.uid, 'exercises', newExercise.id), newExercise);
   };
 
-  const handleEditExercise = (id, title, duration) => {
-    const updatedEvents = events.filter((exercise) => exercise.id !== id);
+  const handleEditExercise = async (id, title, duration) => {
     const updatedExercise = {
-      id, // Keep the same ID
+      id,
       title,
       start: selectedDate,
       extendedProps: {
         duration,
       },
     };
-    setEvents([...updatedEvents, updatedExercise]);
+    const newEvents = events.map((event) => (event.id === id ? updatedExercise : event));
+    setEvents(newEvents);
     setEditExerciseModalOpen(false);
     setSelectedExercise(null);
+    await setDoc(doc(db, 'users', currentUser.uid, 'exercises', id), updatedExercise);
   };
 
-  const handleDeleteExercise = (id) => {
-    const updatedEvents = events.filter((exercise) => exercise.id !== id);
-    setEvents(updatedEvents);
+  const handleDeleteExercise = async (id) => {
+    setEvents(events.filter((event) => event.id !== id));
     if (selectedExercise && selectedExercise.id === id) {
       setSelectedExercise(null);
-      setEditExerciseModalOpen(false); // Close the edit modal if open
+      setEditExerciseModalOpen(false);
     }
+    await deleteDoc(doc(db, 'users', currentUser.uid, 'exercises', id));
   };
 
   const handleEventClick = (clickInfo) => {
