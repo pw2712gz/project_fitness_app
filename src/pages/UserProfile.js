@@ -16,7 +16,7 @@ function UserProfile() {
     age: 52,
     weight: 260,
     height: 72,
-    goals: 'To maintain a muscular physique fit for Hollywood movies.'
+    goals: 'To maintain a muscular physique fit for Hollywood movies.',
   };
 
   const [user, setUser] = useState(initialUser);
