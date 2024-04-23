@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { Typography } from '@mui/material';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { doc, setDoc } from 'firebase/firestore';
 import Rock from '../assets/images/Rock.png';
 import Rock2 from '../assets/images/Rock2.png';
 import Rock3 from '../assets/images/Rock3.png';
 import { useAuth } from '../contexts/AuthContext';
+import { storage, db } from '../firebase/config';
 import Login from '../components/Login';
 
 function UserProfile() {
   const { currentUser, logout } = useAuth();
   const initialUser = {
     name: 'Dwayne Johnson',
-    gender: 'Male',
     age: 52,
     weight: 260,
     height: 72,
@@ -24,8 +26,8 @@ function UserProfile() {
   const [beforePic, setBeforePic] = useState(Rock2);
   const [afterPic, setAfterPic] = useState(Rock3);
 
-  const postDetails = (pics, type) => {
-    if (pics.type === 'image/jpeg' || pics.type === 'image/png') {
+  const postDetails = (file, type) => {
+    if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
       const reader = new FileReader();
       reader.onload = () => {
         switch (type) {
@@ -42,8 +44,31 @@ function UserProfile() {
             break;
         }
       };
-      reader.readAsDataURL(pics);
+      reader.readAsDataURL(file);
     }
+  };
+
+  const uploadImage = async (imageFile, userId, imageType) => {
+    if (!imageFile) return null;
+    const storageRef = ref(storage, `images/${userId}/${imageType}`);
+    await uploadBytes(storageRef, imageFile);
+    return getDownloadURL(storageRef);
+  };
+
+  const handleSave = async () => {
+    setIsEditing(false);
+    const profilePicUrl = await uploadImage(pic, currentUser.uid, 'profile');
+    const beforePicUrl = await uploadImage(beforePic, currentUser.uid, 'before');
+    const afterPicUrl = await uploadImage(afterPic, currentUser.uid, 'after');
+
+    const userProfile = {
+      ...user,
+      profilePicUrl: profilePicUrl || pic, // Use uploaded URL or default if not changed
+      beforePicUrl: beforePicUrl || beforePic,
+      afterPicUrl: afterPicUrl || afterPic,
+    };
+
+    await setDoc(doc(db, 'users', currentUser.uid), userProfile);
   };
 
   const handleChange = (field, value) => {
@@ -52,10 +77,6 @@ function UserProfile() {
 
   const handleEdit = () => {
     setIsEditing(true);
-  };
-
-  const handleSave = () => {
-    setIsEditing(false);
   };
 
   const handleCancel = () => {
@@ -73,9 +94,7 @@ function UserProfile() {
   return (
     <div className="user-profile">
       <div className="user-profile" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <h1 style={{ fontFamily: 'Arial Black', fontWeight: 'bold', color: '#333', margin: '15px 0' }}>User
-          Profile:
-        </h1>
+        <h1 style={{ fontFamily: 'Arial Black', fontWeight: 'bold', color: '#333', margin: '15px 0' }}>User Profile:</h1>
       </div>
 
       <div style={{ display: 'flex' }}>
@@ -93,14 +112,12 @@ function UserProfile() {
               value={user.name}
               onChange={(e) => handleChange('name', e.target.value)}
             />
-        ) : user.name} - <br /> Iron
-          Alliance Member
+        ) : user.name} - <br /> Iron Alliance Member
         </Typography>
       </div>
       <p style={{ color: '#666', lineHeight: '1.5' }}>
         <strong>Age:</strong> {isEditing
-          ? <input value={user.age} onChange={(e) => handleChange('age', e.target.value)} /> : user.age} years
-        old <br />
+          ? <input value={user.age} onChange={(e) => handleChange('age', e.target.value)} /> : user.age} years old <br />
         <strong>Weight:</strong> {isEditing ? (
           <input
             value={user.weight}

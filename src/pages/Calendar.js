@@ -7,8 +7,8 @@ import listPlugin from '@fullcalendar/list';
 import { v4 as uuidv4 } from 'uuid';
 import AddExerciseModal from '../components/AddExerciseModal';
 import EditExerciseModal from '../components/EditExerciseModal';
-import { useAuth } from '../contexts/AuthContext'; // Make sure this path is correct
-import Login from '../components/Login'; // Ensure this component is correctly imported
+import { useAuth } from '../contexts/AuthContext';
+import Login from '../components/Login';
 
 const Calendar = () => {
   const { currentUser } = useAuth();

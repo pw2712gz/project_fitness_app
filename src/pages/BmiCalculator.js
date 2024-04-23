@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Alert, Box, Button, CircularProgress, Stack, TextField, Typography } from '@mui/material';
 import { BMIOptions, fetchData } from '../utils/fetchData';
 import { useAuth } from '../contexts/AuthContext';
-import Login from '../components/Login'; // Ensure this component is properly imported
+import Login from '../components/Login';
 
 const BmiCalculator = () => {
   const { currentUser } = useAuth();
